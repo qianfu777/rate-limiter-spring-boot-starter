@@ -1,5 +1,6 @@
 package com.qianfu.rate.limiter.service;
 
+import com.qianfu.rate.limiter.annotations.RateLimiter;
 import com.qianfu.rate.limiter.enums.Realize;
 import com.qianfu.rate.limiter.enums.Type;
 import com.qianfu.rate.limiter.limiter.Limiter;
@@ -14,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2019/11/1
  */
 public class LimiterHandler {
+    private static final String LOCK = "lock";
+
     public static Limiter create(String key, int limit) {
         return create(Type.DISTRIBUTE, Realize.WINDOW, key, limit);
     }
@@ -43,5 +46,18 @@ public class LimiterHandler {
 
     private Map<String, Limiter> limiterMap = new ConcurrentHashMap<>();
 
+    public boolean tryAcquire(RateLimiter annotation) {
+        Limiter limiter = limiterMap.get(annotation.key());
+        if (limiter == null) {
+            synchronized (LOCK) {
+                limiter = limiterMap.get(annotation.key());
+                if (limiter == null) {
+                    limiter = create(annotation.type(), annotation.realize(), annotation.key(), annotation.limit());
+                    limiterMap.put(annotation.key(), limiter);
+                }
+            }
+        }
 
+        return limiter.tryAcquire();
+    }
 }

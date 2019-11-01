@@ -15,7 +15,7 @@ import java.lang.annotation.*;
 @Inherited
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Limiter {
+public @interface RateLimiter {
     /**
      * 限流器的类型，默认是分布式
      */
