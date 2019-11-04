@@ -39,7 +39,7 @@ public class LocalWindowLimiter extends AbstractLocalLimiter {
                     totalCount += entry.getValue();
                 }
             }
-            return totalCount < limit;
+            return totalCount <= limit;
         }
     }
 }

@@ -1,5 +1,8 @@
 package com.qianfu.rate.limiter.limiter.local;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * 基于计数器实现的本地限流器
  *
@@ -8,24 +11,24 @@ package com.qianfu.rate.limiter.limiter.local;
  */
 public class LocalCountLimiter extends AbstractLocalLimiter {
 
-    private long timestamp;
-    private int count;
+    private AtomicLong refreshTime;
+    private AtomicInteger count;
 
     public LocalCountLimiter(String key, int limit) {
         super(key, limit);
-        count = 0;
-        timestamp = System.currentTimeMillis();
+        count = new AtomicInteger(0);
+        refreshTime = new AtomicLong(System.currentTimeMillis());
     }
 
     @Override
     public boolean tryAcquire() {
-        synchronized (lock) {
-            long now = System.currentTimeMillis();
-            if (now - timestamp >= ONE_SECOND_MILLS) {
-                count = 0;
-                timestamp = now;
-            }
-            return ++count < limit;
+        int tempCount = count.get();
+        long tempTime = refreshTime.get();
+        long now = System.currentTimeMillis();
+        if (now - tempTime >= ONE_SECOND_MILLS) {
+            count.compareAndSet(tempCount, 0);
+            refreshTime.compareAndSet(tempTime, now);
         }
+        return count.incrementAndGet() <= limit;
     }
 }

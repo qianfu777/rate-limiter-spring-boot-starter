@@ -18,11 +18,15 @@ import java.lang.annotation.*;
 public @interface RateLimiter {
     /**
      * 限流器的类型，默认是分布式
+     *
+     * @see Type
      */
     Type type() default Type.DISTRIBUTE;
 
     /**
      * 限流器的实现，默认是滑动窗口
+     *
+     * @see Realize
      */
     Realize realize() default Realize.WINDOW;
 
