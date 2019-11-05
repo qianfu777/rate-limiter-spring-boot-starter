@@ -1,3 +1,4 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.qianfu.rate.limiter.config.LimiterAutoConfiguration
+com.qianfu.rate.limiter.config.LimiterAutoConfiguration,\
+com.qianfu.rate.limiter.config.LimiterAspectConfiguration

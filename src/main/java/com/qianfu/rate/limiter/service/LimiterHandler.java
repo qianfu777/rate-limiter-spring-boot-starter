@@ -4,8 +4,13 @@ import com.qianfu.rate.limiter.annotations.RateLimiter;
 import com.qianfu.rate.limiter.enums.Realize;
 import com.qianfu.rate.limiter.enums.Type;
 import com.qianfu.rate.limiter.limiter.Limiter;
+import com.qianfu.rate.limiter.limiter.distributed.DistributedCountLimiter;
+import com.qianfu.rate.limiter.limiter.distributed.DistributedWindowLimiter;
 import com.qianfu.rate.limiter.limiter.local.LocalCountLimiter;
+import com.qianfu.rate.limiter.limiter.local.LocalLeakyBucketLimiter;
+import com.qianfu.rate.limiter.limiter.local.LocalTokenBucketLimiter;
 import com.qianfu.rate.limiter.limiter.local.LocalWindowLimiter;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,12 +21,17 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LimiterHandler {
     private static final String LOCK = "lock";
+    private StringRedisTemplate redisTemplate;
 
-    public static Limiter create(String key, int limit) {
+    public LimiterHandler(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public Limiter create(String key, int limit) {
         return create(Type.DISTRIBUTE, Realize.WINDOW, key, limit);
     }
 
-    public static Limiter create(Type type, Realize realize, String key, int limit) {
+    public Limiter create(Type type, Realize realize, String key, int limit) {
         if (Type.LOCAL.equals(type)) {
             switch (realize) {
                 case COUNT:
@@ -29,16 +39,23 @@ public class LimiterHandler {
                 case WINDOW:
                     return new LocalWindowLimiter(key, limit);
                 case LEAKY_BUCKET:
-                    return null;
-                case TOKEN_BUCKET:
-                    return null;
+                    return new LocalLeakyBucketLimiter(key, limit);
                 default:
-                    return new LocalWindowLimiter(key, limit);
+                    return new LocalTokenBucketLimiter(key, limit);
             }
         }
 
         if (Type.DISTRIBUTE.equals(type)) {
-
+            switch (realize) {
+                case COUNT:
+                    return new DistributedCountLimiter(key, limit, redisTemplate);
+                case WINDOW:
+                    return new DistributedWindowLimiter(key, limit, redisTemplate);
+                case LEAKY_BUCKET:
+                    return new LocalLeakyBucketLimiter(key, limit);
+                default:
+                    return new LocalTokenBucketLimiter(key, limit);
+            }
         }
 
         return null;

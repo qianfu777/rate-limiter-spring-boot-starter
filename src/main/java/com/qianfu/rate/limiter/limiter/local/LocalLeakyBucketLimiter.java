@@ -39,7 +39,7 @@ public class LocalLeakyBucketLimiter extends AbstractLocalLimiter {
         int tempWatch = water.get();
         long tempTime = refreshTime.get();
         long now = System.currentTimeMillis();
-        //水随着时间流逝,不断流走,最多就流干到0.
+        // 水随着时间流逝,不断流走,最多就流干到0.
         water.compareAndSet(tempWatch, (int) Math.max(0, tempWatch - (now - tempTime) / 1000 * rate));
         refreshTime.compareAndSet(tempTime, now);
     }
