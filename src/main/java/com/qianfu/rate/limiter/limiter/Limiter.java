@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public abstract class Limiter {
     protected static final int ONE_SECOND_MILLS = 1000;
-    protected static final String PREFIX = "RATE-LIMITER:";
     protected String key;
     protected int limit;
 

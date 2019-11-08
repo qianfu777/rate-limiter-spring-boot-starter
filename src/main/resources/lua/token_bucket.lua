@@ -1,6 +1,6 @@
 function tryAcquire(key, capacity)
-    local water = refreshWater(key)
-    if water < capacity then
+    local token = refreshToken(key, capacity)
+    if token > 0 then
         redis.call('incr', key)
         return 1
     else
@@ -8,15 +8,15 @@ function tryAcquire(key, capacity)
     end
 end
 
-function refreshWater(key)
+function refreshToken(key, capacity)
     local exist = tonumber(redis.call('exists', key))
     if exist == 1 then
-        local water = tonumber(redis.call('get', key))
+        local token = tonumber(redis.call('get', key))
         local timeDiff = getTimeDiff(key)
 
-        water = math.max(0, water - timeDiff)
-        redis.call('set', key, water)
-        return water
+        token = math.max(capacity, token + timeDiff)
+        redis.call('set', key, token)
+        return token
     else
         redis.call('set', 0)
         return 0
@@ -26,7 +26,7 @@ end
 function getTimeDiff(key)
     local timeKey = key + ':TIMESTAMP'
     local now = tonumber(redis.call('TIME')[1])
-    local exist = tonumber(redis.call('exists', key))
+    local exist = tonumber(redis.call('exists', timeKey))
     if exist == 1 then
         local refreshTime = tonumber(redis.call('get', timeKey))
         redis.call('set', timeKey, now)

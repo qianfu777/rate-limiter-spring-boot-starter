@@ -29,7 +29,7 @@ public class DistributedWindowLimiter extends AbstractDistributedLimiter {
         long now = System.currentTimeMillis() % 100;
         List<String> keys = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
-            keys.add(key + "-" + (now - i));
+            keys.add(redisKey + "-" + (now - i));
         }
         return redisTemplate.execute(script, keys) <= limit;
     }

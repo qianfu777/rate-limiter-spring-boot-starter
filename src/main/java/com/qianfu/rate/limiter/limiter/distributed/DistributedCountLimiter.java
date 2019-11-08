@@ -18,7 +18,7 @@ public class DistributedCountLimiter extends AbstractDistributedLimiter {
 
     @Override
     public boolean tryAcquire() {
-        String countKey = key + "-" + System.currentTimeMillis() / 1000;
+        String countKey = redisKey + "-" + System.currentTimeMillis() / 1000;
         int count = redisTemplate.opsForValue().increment(countKey, 1).intValue();
         redisTemplate.expire(countKey, 2, TimeUnit.SECONDS);
         return count <= limit;

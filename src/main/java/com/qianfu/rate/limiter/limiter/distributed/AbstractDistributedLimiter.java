@@ -10,11 +10,14 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  * @date 2019/11/1
  */
 public abstract class AbstractDistributedLimiter extends Limiter {
+    private static final String PREFIX = "RATE-LIMITER:";
 
+    protected String redisKey;
     protected StringRedisTemplate redisTemplate;
 
     public AbstractDistributedLimiter(String key, int limit, StringRedisTemplate redisTemplate) {
         super(key, limit);
         this.redisTemplate = redisTemplate;
+        redisKey = PREFIX + key;
     }
 }

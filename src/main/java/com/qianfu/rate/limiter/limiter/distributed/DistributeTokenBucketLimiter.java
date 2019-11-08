@@ -26,6 +26,6 @@ public class DistributeTokenBucketLimiter extends AbstractDistributedLimiter {
 
     @Override
     public boolean tryAcquire() {
-        return redisTemplate.execute(script, Collections.singletonList(key)) <= limit;
+        return redisTemplate.execute(script, Collections.singletonList(redisKey)) == 1;
     }
 }
